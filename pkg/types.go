@@ -34,8 +34,6 @@ type jwtToken struct {
 }
 
 type Role struct {
-	hid       string
-	instance  string
 	Name      string `json:"name,omitempty"`
 	Template  string `json:"template,omitempty"`
 	ValidFrom string `json:"validFrom,omitempty"`

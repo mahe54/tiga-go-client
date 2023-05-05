@@ -1,11 +1,12 @@
 package tigaclient
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -39,7 +40,6 @@ func New(caller CallerInterface) (*Client, error) {
 }
 
 func (c *Client) loginSIDM() error {
-
 	sidmHost := os.Getenv("SIDM_HOST")
 	if sidmHost == "" {
 		return errors.New("SIDM_HOST environment variable not set")
@@ -75,13 +75,17 @@ func (c *Client) loginSIDM() error {
 	}
 	defer res.Body.Close()
 
-	restoken, errs := ioutil.ReadAll(res.Body)
-	if errs != nil {
+	scanner := bufio.NewScanner(res.Body)
+	var restoken bytes.Buffer
+	for scanner.Scan() {
+		restoken.Write(scanner.Bytes())
+	}
+	if err := scanner.Err(); err != nil {
 		return err
 	}
 
 	jwtToken := jwtToken{}
-	err = json.Unmarshal(restoken, &jwtToken)
+	err = json.Unmarshal(restoken.Bytes(), &jwtToken)
 	if err != nil {
 		return err
 	}
@@ -109,7 +113,7 @@ func (c *Client) GetRole(hid, name string) (*Role, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -119,7 +123,7 @@ func (c *Client) GetRole(hid, name string) (*Role, error) {
 		}
 	}
 
-	resRoles, errs := ioutil.ReadAll(res.Body)
+	resRoles, errs := io.ReadAll(res.Body)
 	if errs != nil {
 		return nil, err
 	}
@@ -134,7 +138,6 @@ func (c *Client) GetRole(hid, name string) (*Role, error) {
 }
 
 func (c *Client) CreateRole(r *Role) (*Role, error) {
-
 	path := "/v1/userRoles"
 	u, _ := url.Parse(c.tigaURL + path)
 	q := u.Query()
@@ -150,7 +153,6 @@ func (c *Client) CreateRole(r *Role) (*Role, error) {
 		return nil, err
 	}
 
-	//req, err := http.NewRequest("POST", fmt.Sprintf("%s%s", c.HostURL, path), strings.NewReader(string(roleJson)))
 	req, _ := http.NewRequest("POST", u.String(), bytes.NewBuffer(roleJson))
 	if err != nil {
 		return nil, err
@@ -165,26 +167,34 @@ func (c *Client) CreateRole(r *Role) (*Role, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 201 {
-		body, err := ioutil.ReadAll(res.Body)
-		if err != nil {
+		scanner := bufio.NewScanner(res.Body)
+		var body bytes.Buffer
+		for scanner.Scan() {
+			body.Write(scanner.Bytes())
+		}
+		if err := scanner.Err(); err != nil {
 			return nil, err
 		}
 		return nil, &TigaError{
 			StatusCode: res.StatusCode,
-			Message:    string(body),
+			Message:    body.String(),
 		}
 	}
 
-	resRole, errs := ioutil.ReadAll(res.Body)
-	if errs != nil {
+	scanner := bufio.NewScanner(res.Body)
+	var resBody bytes.Buffer
+	for scanner.Scan() {
+		resBody.Write(scanner.Bytes())
+	}
+	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
 
 	role := Role{}
-	err = json.Unmarshal(resRole, &role)
+	err = json.Unmarshal(resBody.Bytes(), &role)
 	if err != nil {
 		return nil, err
 	}
 
-	return r, nil
+	return &role, nil
 }
