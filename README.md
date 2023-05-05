@@ -9,19 +9,25 @@ export http_proxy=proxy-se-uan.ddc.teliasonera.net:8080
 export HTTP_PROXY=proxy-se-uan.ddc.teliasonera.net:8080
 export https_proxy=proxy-se-uan.ddc.teliasonera.net:8080
 export HTTPS_PROXY=proxy-se-uan.ddc.teliasonera.net:8080
+
 ```
 
 Without the proxy, you won't be able to reach SIDM to get your token needed for login towards Tiga.
 Without VPN you won't be able to connect to Tiga
 
 In your .bashrc, .zshrc you need to export:
+
 ```
 export GOPRIVATE="github.com/telia-company/*"
+
 ````
+
 Because you won't be able to 'go get' this module otherwise, to be included in other code bases.
 also:
+
 ```
 source data/prodEnvVars.sh
+
 ```
 To get the environment variables you need.
 It is important that you source/export variables from the shell from where you start your vs code env from.
