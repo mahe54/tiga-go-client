@@ -5,7 +5,8 @@ import (
 	"net/http"
 )
 
-type Caller struct{}
+type Caller struct {
+}
 
 type CallerInterface interface {
 	DoCall(req *http.Request) (*http.Response, error)
@@ -22,9 +23,10 @@ func (e *TigaError) Error() string {
 
 // Client -
 type Client struct {
-	tigaURL string
-	token   *jwtToken
-	Caller  CallerInterface
+	tigaURL        string
+	token          *jwtToken
+	Caller         CallerInterface
+	OutputResponse bool
 }
 
 type jwtToken struct {
@@ -34,6 +36,7 @@ type jwtToken struct {
 }
 
 type Role struct {
+	ID        string `json:"id,omitempty"`
 	Name      string `json:"name,omitempty"`
 	Template  string `json:"template,omitempty"`
 	ValidFrom string `json:"validFrom,omitempty"`

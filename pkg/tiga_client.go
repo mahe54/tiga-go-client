@@ -20,7 +20,7 @@ import (
 // SIDM_HOST=https://staging.securityservice.teliacompany.com
 // SIDM_SECRET=0b6ad3d80d060fa0c6317673b38cad59d8a249611444ecd63c2919fda9ed358dd89f68b6e5feaa2a522b58a578fc0fa925e5a28c101244cbaa82f90f4540e999
 // SIDM_SERVICEID=2bee5a4c-6070-4b37-b13f-689e27a4d2a8
-func New(caller CallerInterface) (*Client, error) {
+func New(caller CallerInterface, outputResponse bool) (*Client, error) {
 
 	tigaHost := os.Getenv("TIGA_HOST")
 	if tigaHost == "" {
@@ -30,6 +30,7 @@ func New(caller CallerInterface) (*Client, error) {
 		tigaURL: tigaHost,
 	}
 	c.Caller = caller
+	c.OutputResponse = outputResponse
 
 	err := c.loginSIDM()
 	if err != nil {
@@ -75,6 +76,10 @@ func (c *Client) loginSIDM() error {
 	}
 	defer res.Body.Close()
 
+	if c.OutputResponse {
+		io.Copy(os.Stdout, res.Body)
+	}
+
 	scanner := bufio.NewScanner(res.Body)
 	var restoken bytes.Buffer
 	for scanner.Scan() {
@@ -111,6 +116,10 @@ func (c *Client) GetRole(hid, name string) (*Role, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+
+	if c.OutputResponse {
+		io.Copy(os.Stdout, res.Body)
+	}
 
 	if res.StatusCode != 200 {
 		body, err := io.ReadAll(res.Body)
@@ -165,6 +174,10 @@ func (c *Client) CreateRole(r *Role) (*Role, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+
+	if c.OutputResponse {
+		io.Copy(os.Stdout, res.Body)
+	}
 
 	if res.StatusCode != 201 {
 		scanner := bufio.NewScanner(res.Body)

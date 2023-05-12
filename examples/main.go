@@ -26,7 +26,7 @@ func main() {
 		ric = &tc.Caller{}
 	}
 
-	client, err := tc.New(ric)
+	client, err := tc.New(ric, true)
 	if err != nil {
 		fmt.Print(err.Error())
 	}
