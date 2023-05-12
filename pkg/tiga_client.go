@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -20,7 +21,7 @@ import (
 // SIDM_HOST=https://staging.securityservice.teliacompany.com
 // SIDM_SECRET=0b6ad3d80d060fa0c6317673b38cad59d8a249611444ecd63c2919fda9ed358dd89f68b6e5feaa2a522b58a578fc0fa925e5a28c101244cbaa82f90f4540e999
 // SIDM_SERVICEID=2bee5a4c-6070-4b37-b13f-689e27a4d2a8
-func New(caller CallerInterface, outputResponse bool) (*Client, error) {
+func New(caller CallerInterface, logResponses bool) (*Client, error) {
 
 	tigaHost := os.Getenv("TIGA_HOST")
 	if tigaHost == "" {
@@ -30,7 +31,7 @@ func New(caller CallerInterface, outputResponse bool) (*Client, error) {
 		tigaURL: tigaHost,
 	}
 	c.Caller = caller
-	c.OutputResponse = outputResponse
+	c.LogResponses = logResponses
 
 	err := c.loginSIDM()
 	if err != nil {
@@ -76,17 +77,18 @@ func (c *Client) loginSIDM() error {
 	}
 	defer res.Body.Close()
 
-	if c.OutputResponse {
-		io.Copy(os.Stdout, res.Body)
-	}
-
 	scanner := bufio.NewScanner(res.Body)
+
 	var restoken bytes.Buffer
 	for scanner.Scan() {
 		restoken.Write(scanner.Bytes())
 	}
 	if err := scanner.Err(); err != nil {
 		return err
+	}
+
+	if c.LogResponses {
+		printResponseBody(string(restoken.Bytes()))
 	}
 
 	jwtToken := jwtToken{}
@@ -117,10 +119,6 @@ func (c *Client) GetRole(hid, name string) (*Role, error) {
 	}
 	defer res.Body.Close()
 
-	if c.OutputResponse {
-		io.Copy(os.Stdout, res.Body)
-	}
-
 	if res.StatusCode != 200 {
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
@@ -132,13 +130,22 @@ func (c *Client) GetRole(hid, name string) (*Role, error) {
 		}
 	}
 
-	resRoles, errs := io.ReadAll(res.Body)
-	if errs != nil {
+	scanner := bufio.NewScanner(res.Body)
+
+	var resRoles bytes.Buffer
+	for scanner.Scan() {
+		resRoles.Write(scanner.Bytes())
+	}
+	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
 
+	if c.LogResponses {
+		printResponseBody(string(resRoles.Bytes()))
+	}
+
 	roles := []Role{}
-	err = json.Unmarshal(resRoles, &roles)
+	err = json.Unmarshal(resRoles.Bytes(), &roles)
 	if err != nil {
 		return nil, err
 	}
@@ -175,10 +182,6 @@ func (c *Client) CreateRole(r *Role) (*Role, error) {
 	}
 	defer res.Body.Close()
 
-	if c.OutputResponse {
-		io.Copy(os.Stdout, res.Body)
-	}
-
 	if res.StatusCode != 201 {
 		scanner := bufio.NewScanner(res.Body)
 		var body bytes.Buffer
@@ -195,12 +198,21 @@ func (c *Client) CreateRole(r *Role) (*Role, error) {
 	}
 
 	scanner := bufio.NewScanner(res.Body)
+
+	if c.LogResponses {
+		printResponseBody(string(scanner.Bytes()))
+	}
+
 	var resBody bytes.Buffer
 	for scanner.Scan() {
 		resBody.Write(scanner.Bytes())
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
+	}
+
+	if c.LogResponses {
+		printResponseBody(string(resBody.Bytes()))
 	}
 
 	role := Role{}
@@ -210,4 +222,8 @@ func (c *Client) CreateRole(r *Role) (*Role, error) {
 	}
 
 	return &role, nil
+}
+
+func printResponseBody(src string) {
+	fmt.Printf("Response Body:\n %v \n", src)
 }

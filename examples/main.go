@@ -26,7 +26,7 @@ func main() {
 		ric = &tc.Caller{}
 	}
 
-	client, err := tc.New(ric, true)
+	client, err := tc.New(ric, false)
 	if err != nil {
 		fmt.Print(err.Error())
 	}
@@ -34,24 +34,24 @@ func main() {
 	// Get Role from Tiga (Lookup)
 	role, err := client.GetRole(HID, roleName)
 	if err != nil {
-		fmt.Printf("Error: %+v \n\n", err.Error())
+		fmt.Printf("\nError: %+v \n\n", err.Error())
 	} else {
-		fmt.Printf("Recieved role: %+v \n\n", role)
+		fmt.Printf("\nRecieved role: %+v \n\n", role)
 	}
 
 	role, err = client.GetRole(HID, roleName+"name_that_doesnt_exist")
 	if err != nil {
-		fmt.Printf("Error: %+v \n\n", err.Error())
+		fmt.Printf("\nError: %+v \n\n", err.Error())
 	} else {
-		fmt.Printf("Recieved role: %+v \n\n", role)
+		fmt.Printf("\nRecieved role: %+v \n\n", role)
 	}
 
 	//(fail to) Create role in Tiga
 	newRole := &tc.Role{
-		Name:               "AWS_91234998891225_Administrator_Role",
+		Name:               "AWS_91234000001225_Administrator_Role",
 		Template:           "Amazon Web Services Cloud (AWS)",
-		ValidFrom:          "2023-05-03T12:55:57.978+00:00",
-		ValidTo:            "2024-04-25T12:55:57.978+00:00",
+		ValidFrom:          "2023-05-03T01:01:01Z",
+		ValidTo:            "2024-04-25T01:01:01Z",
 		PreventSelfService: false,
 		Description:        "Gives access to admin parts of AWS",
 		SystemInstance:     "/v1/systems/HID100000006/instances/HID100000006.TEST",
@@ -74,9 +74,9 @@ func main() {
 
 	createdRole, err := client.CreateRole(newRole)
 	if err != nil {
-		fmt.Printf("Error: %+v \n\n", err.Error())
+		fmt.Printf("\nError: %+v \n\n", err.Error())
 	} else {
-		fmt.Printf("Created role: %+v \n\n", createdRole)
+		fmt.Printf("\nCreated role: %+v \n\n", createdRole)
 	}
 
 	//Create role with unixtime in name so it allways differs and therefore gets created :)
@@ -84,8 +84,8 @@ func main() {
 	newRole = &tc.Role{
 		Name:               "AWS_91234998891225_Administrator_Role_" + fmt.Sprint(currentTime),
 		Template:           "Amazon Web Services Cloud (AWS)",
-		ValidFrom:          "2023-05-03T12:55:57.978+00:00",
-		ValidTo:            "2024-04-25T12:55:57.978+00:00",
+		ValidFrom:          "2023-05-03T01:01:01Z",
+		ValidTo:            "2024-04-25T01:01:01Z",
 		PreventSelfService: false,
 		Description:        "Gives access to admin parts of AWS",
 		SystemInstance:     "/v1/systems/HID100000006/instances/HID100000006.TEST",
@@ -108,8 +108,8 @@ func main() {
 
 	createdRole, err = client.CreateRole(newRole)
 	if err != nil {
-		fmt.Printf("Error: %+v \n\n", err.Error())
+		fmt.Printf("\nError: %+v \n\n", err.Error())
 	} else {
-		fmt.Printf("Created role: %+v \n\n", createdRole)
+		fmt.Printf("\nCreated role: %+v \n\n", createdRole)
 	}
 }

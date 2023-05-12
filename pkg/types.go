@@ -23,10 +23,10 @@ func (e *TigaError) Error() string {
 
 // Client -
 type Client struct {
-	tigaURL        string
-	token          *jwtToken
-	Caller         CallerInterface
-	OutputResponse bool
+	tigaURL      string
+	token        *jwtToken
+	Caller       CallerInterface
+	LogResponses bool
 }
 
 type jwtToken struct {
