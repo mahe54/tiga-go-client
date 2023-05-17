@@ -1,3 +1,3 @@
-module github.com/telia-company/tiga-go-client
+module github.com/TeliaSoneraNorge/tiga-go-client
 
 go 1.20

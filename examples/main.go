@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	tc "github.com/telia-company/tiga-go-client/pkg"
+	tc "github.com/TeliaSoneraNorge/tiga-go-client/pkg"
 )
 
 func main() {
